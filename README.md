@@ -27,7 +27,7 @@ The work done by him and others helped me get started with the project.
 | 0x34-0x37   | Padding                 |        |                         |
 | 0x38-0x3B   | Unknown                 | uint16 | Value is 10000,maybe lsb|
 | 0x3B-0x41   | Padding                 |        |                         |
-| 0x42        | Temperature unit 0,1,2  |  uint8 | Enum: 0:°C, 1:°K, 2:°F  |
+| 0x42        | Unknown                 |  uint8 | value is always 2       |
 | 0x43-0xFD   | Padding??               |        |                         |
 | 0xFE        | 0xAC? or 0x0?           |        | if 0xFE/FF data offset  |
 | 0xFF        | 0xCA? or 0x0?           |        | data is at 0x100,or 0x120|
