@@ -61,7 +61,11 @@ def extract_data_from_binary(file_path):
         irg_header = IrgHeader(*data)
         irg_header.print()
 
-        thermal_header = file.read(0x80)
+        if thermal_header[0x7E] == 0xAC and thermal_header[0x7F] == 0xCA:
+           diff_start = 0x80
+        else:
+           diff_start = 0x100
+        thermal_header = file.seek(diff_start)
 
         # Extract histogram corrected preview
         print("Position before reading histogram data: ", hex(file.tell()))
@@ -109,10 +113,10 @@ def main():
     fig.colorbar(plt.cm.ScalarMappable(cmap='gray'), ax=ax1, label="Pixel Value")
 
     # Plotting raw thermal data on the second subplot
-    thermal_data = extracted_data["thermal_data"] / 10.0
+    thermal_data = extracted_data["thermal_data"] #/ 10.0
     # Convert from Kelvin to Fahrenheit
     thermal_data_fahrenheit = (thermal_data - 273.15) * 9/5 + 32
-    im = ax2.imshow(thermal_data_fahrenheit, cmap='inferno')
+    im = ax2.imshow(thermal_data, cmap='inferno')
     ax2.set_title("Thermal Data")
     ax2.axis('off')
     fig.colorbar(im, ax=ax2, label="Temperature (°F)")
