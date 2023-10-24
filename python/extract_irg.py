@@ -26,7 +26,7 @@ class IrgHeader:
     transmissivity: int
     padding: int
     unknown2: int
-    temperature_unit: int
+    unknown3: int
     def print(self):
         print("Unknown Header     : ", self.unknown_header)
         print("First Image Size   : ", self.first_image_size)
@@ -48,7 +48,7 @@ class IrgHeader:
         print("Transmissivity             : ", self.transmissivity/10000)
         print("Padding                    : ", self.padding)
         print("Unknown                    : ", self.unknown2)
-        print("Temperature unit 0,1,2     : ", self.temperature_unit)
+        print("Unknown                    : ", self.unknown3)
 
 
 def extract_data_from_binary(file_path):
