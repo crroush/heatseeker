@@ -39,5 +39,11 @@ Couple of notes is the ICD isn't 100% complete, but it captures how you can read
 the basic data format.  Couple notes is from others that dug into this, is there
 is two different starting locations for the first image.  I also only own a
 TC004 so I am limited to IRG formats that I can test.
+# Example
+Here is the original jpg file I pulled off the TC004 of my dogs sitting on the couch
+![231022095408](https://github.com/crroush/heatseeker/assets/9982203/5261b108-a047-4aa9-a080-302a278f40a2)
+
+Now here is after running the `python python/extract_irg.py /path/to/my/irg/file`
+![image](https://github.com/crroush/heatseeker/assets/9982203/89d1b418-990b-4320-b671-896c31df21da)
 
 
