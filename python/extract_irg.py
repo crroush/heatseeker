@@ -113,10 +113,10 @@ def main():
     fig.colorbar(plt.cm.ScalarMappable(cmap='gray'), ax=ax1, label="Pixel Value")
 
     # Plotting raw thermal data on the second subplot
-    thermal_data = extracted_data["thermal_data"] #/ 10.0
+    thermal_data = extracted_data["thermal_data"] / 10.0
     # Convert from Kelvin to Fahrenheit
     thermal_data_fahrenheit = (thermal_data - 273.15) * 9/5 + 32
-    im = ax2.imshow(thermal_data, cmap='inferno')
+    im = ax2.imshow(thermal_data_fahrenheit, cmap='inferno')
     ax2.set_title("Thermal Data")
     ax2.axis('off')
     fig.colorbar(im, ax=ax2, label="Temperature (°F)")
