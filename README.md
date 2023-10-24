@@ -30,7 +30,7 @@ The work done by him and others helped me get started with the project.
 | 0x42        | Unknown                 |  uint8 | value is always 2       |
 | 0x43-0xFD   | Padding??               |        |                         |
 | 0xFE        | 0xAC? or 0x0?           |        | if 0xFE/FF data offset  |
-| 0xFF        | 0xCA? or 0x0?           |        | data is at 0x100,or 0x120|
+| 0xFF        | 0xCA? or 0x0?           |        | data is at 0x100,or 0x80|
 | 0x100       | First image black/white |  uint8 | size from 0x04-0x07     |
 | prev  + size| Thermal Image (K)       |  uint16| divide by 10            |
 | prev  + size| JPG (until end of file? |  uint8 | always green?           |
