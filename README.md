@@ -42,8 +42,20 @@ TC004 so I am limited to IRG formats that I can test.
 # Example
 Here is the original jpg file I pulled off the TC004 of my dogs sitting on the couch
 ![231022095408](https://github.com/crroush/heatseeker/assets/9982203/5261b108-a047-4aa9-a080-302a278f40a2)
-
-Now here is after running the `python python/extract_irg.py /path/to/my/irg/file`
+* Now here is after running the `python python/extract_irg.py /path/to/my/irg/file`
 ![image](https://github.com/crroush/heatseeker/assets/9982203/89d1b418-990b-4320-b671-896c31df21da)
+
+# HeatSeeker
+There is a simple PyQt5 viewer that allows you to plot the images and do some basic analysis
+* load an IRG file from the file menu
+![image](https://github.com/crroush/heatseeker/assets/9982203/4c2761fe-689e-4ce6-ac71-0bdfa634c4d0)
+* You can zoom and change the overall scale, it defaults to the min/max value of the image, then you can change the range using the slider bar on the left of the image
+![image](https://github.com/crroush/heatseeker/assets/9982203/a17c6ea2-048f-4995-97bf-9a129c22b6a2)
+* As you move your cursor over the image below the image will give you the value of your cursor (matplotlib also puts it on the toolbar in the upper right)
+* Currently it defaults to Farenheit
+## Installation
+* It depends on PyQt5, matplotlib, numpy and superqt (for the dual slider)
+there is a requirements.txt
+`pip install -r requirements.txt`
 
 
