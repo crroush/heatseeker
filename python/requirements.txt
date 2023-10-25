@@ -1,0 +1,4 @@
+matplotlib==3.5.1
+numpy==1.21.5
+PyQt5==5.15.10
+superqt==0.6.1
