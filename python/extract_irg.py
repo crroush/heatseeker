@@ -1,7 +1,11 @@
 import argparse
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.cm as cm
 import struct
+import glob
+import os
+from PIL import Image
 
 from dataclasses import dataclass
 @dataclass
@@ -51,7 +55,7 @@ class IrgHeader:
         print("Unknown                    : ", self.unknown3)
 
 
-def extract_data_from_binary(file_path):
+def extract_data_from_binary(file_path, print_header=False):
     with open(file_path, 'rb') as file:
         # Extract thermal header
         thermal_header = file.read(128)
@@ -59,7 +63,8 @@ def extract_data_from_binary(file_path):
         format_str = '<iIHHbIHHBIHHIIIIIIIH14xB'
         data = struct.unpack(format_str, thermal_header[:75])
         irg_header = IrgHeader(*data)
-        irg_header.print()
+        if print_header:
+            irg_header.print()
 
         if thermal_header[0x7E] == 0xAC and thermal_header[0x7F] == 0xCA:
            diff_start = 0x80
@@ -67,67 +72,85 @@ def extract_data_from_binary(file_path):
            diff_start = 0x100
         thermal_header = file.seek(diff_start)
 
-        # Extract histogram corrected preview
-        print("Position before reading histogram data: ", hex(file.tell()))
-        histogram_data = np.frombuffer(
+        # Extract grayscale image
+        grayscale_data = np.frombuffer(
                 file.read(irg_header.first_image_size),
                 dtype=np.uint8).reshape(irg_header.first_image_width,
                                         irg_header.first_image_height)
 
         # Extract raw thermal data
-        print("Position before reading thermal data: ", hex(file.tell()))
-
         thermal_data = np.frombuffer(
                 file.read(2*irg_header.second_image_size),
                 dtype=np.uint16).reshape(irg_header.second_image_width,
                                         irg_header.second_image_height)
 
-        print("Position before reading jpg data:", hex(file.tell()))
         jpg_color_image = np.frombuffer(file.read(1350), dtype=np.uint8)
 
     return {
-        "histogram_data": histogram_data,
+        "grayscale_data": grayscale_data,
         "thermal_data": thermal_data,
         "jpg_color_image": jpg_color_image
     }
+def save_as_jpg(data, filename, cmap='inferno'):
+    # Normalize data to 0-1 range
+    data_normalized = (data - data.min()) / (data.max() - data.min())
 
+    # Apply colormap to get RGB values
+    rgb_image = (cm.get_cmap(cmap)(data_normalized)[:, :, :3] * 255).astype(np.uint8)
+
+    img = Image.fromarray(rgb_image)
+    img.save(filename)
 def main():
     parser = argparse.ArgumentParser(
             description="Extract and plot data from binary file.")
-    parser.add_argument("file_path", help="Path to the binary file.")
-    parser.add_argument("--output-jpg", type=str, default=None,
-                        help="Specify the filename to save the JPG." \
-                             "If not provided, the JPG won't be saved.")
+    parser.add_argument("file_path", nargs="*", help="Path to the binary file.")
+    parser.add_argument( "-p", "--plot", action='store_true',
+            help="Plots each of the files")
+    parser.add_argument( "-s", "--save", action='store_true',
+            help="Saves each of the images as a file")
+    parser.add_argument("--outdir", type=str, default=".",
+                        help="Specify the directory to save the output JPGs.")
     args = parser.parse_args()
 
-    args = parser.parse_args()
+    # Ensure the output directory exists
+    if not os.path.exists(args.outdir):
+        os.makedirs(args.outdir)
 
-    extracted_data = extract_data_from_binary(args.file_path)
+    for file in args.file_path:
+        extracted_data = extract_data_from_binary(file)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+        # Save grayscale_data and thermal_data as separate JPG files
+        base_name = os.path.basename(file).split('.')[0]
+        gray_filename = os.path.join(args.outdir, f"{base_name}_bw.jpg")
+        thermal_filename = os.path.join(args.outdir, f"{base_name}_thermal.jpg")
 
-    # Plotting histogram corrected preview on the first subplot
-    ax1.imshow(extracted_data["histogram_data"], cmap='gray')
-    ax1.set_title("Histogram Corrected Preview")
-    ax1.axis('off')
-    fig.colorbar(plt.cm.ScalarMappable(cmap='gray'), ax=ax1, label="Pixel Value")
+        if args.save:
+            save_as_jpg(extracted_data["grayscale_data"], gray_filename,
+                    cmap="gray")
+            save_as_jpg(extracted_data["thermal_data"], thermal_filename)
 
-    # Plotting raw thermal data on the second subplot
-    thermal_data = extracted_data["thermal_data"] / 10.0
-    # Convert from Kelvin to Fahrenheit
-    thermal_data_fahrenheit = (thermal_data - 273.15) * 9/5 + 32
-    im = ax2.imshow(thermal_data_fahrenheit, cmap='inferno')
-    ax2.set_title("Thermal Data")
-    ax2.axis('off')
-    fig.colorbar(im, ax=ax2, label="Temperature (°F)")
+        if args.plot:
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
-    plt.tight_layout()
-    plt.show()
+            # Plotting histogram corrected preview on the first subplot
+            ax1.imshow(extracted_data["grayscale_data"], cmap='gray')
+            ax1.set_title("Histogram Corrected Preview")
+            ax1.axis('off')
+            fig.colorbar(plt.cm.ScalarMappable(cmap='gray'),
+                ax=ax1, label="Pixel Value")
 
-    # Plotting the JPG color image
-    if args.output_jpg:
-        with open(args.output_jpg, 'wb') as f:
-            f.write(extracted_data["jpg_color_image"])
+            # Plotting raw thermal data on the second subplot
+            thermal_data = extracted_data["thermal_data"] / 10.0
+            # Convert from Kelvin to Fahrenheit
+            thermal_data_fahrenheit = (thermal_data - 273.15) * 9/5 + 32
+            im = ax2.imshow(thermal_data_fahrenheit, cmap='inferno')
+            ax2.set_title("Thermal Data")
+            ax2.axis('off')
+            fig.colorbar(im, ax=ax2, label="Temperature (°F)")
+
+            plt.tight_layout()
+            plt.show()
+
 
 if __name__ == "__main__":
     main()
